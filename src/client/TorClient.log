@@ -1,0 +1,8 @@
+Feb 02, 2015 11:32:42 PM client.TorClient DirData
+INFO: Fetching data from Tor Directory.
+Feb 02, 2015 11:32:42 PM client.TorClient DirData
+INFO: Data fetching finished.
+Feb 02, 2015 11:32:48 PM client.TorClient main
+INFO: Data to be sent received.
+Feb 02, 2015 11:32:48 PM client.TorClient encrypt
+INFO: Data encryption process initiated.
