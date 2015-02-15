@@ -38,17 +38,20 @@ public class TorRouter {
     private  DataOutputStream dout;
     private BufferedReader br ;
     private Socket router;
-    private String E,N;
+    private String[] E,N,D;
     private byte[] data,decryptedData;
-    private final String DirIP="192.168.0.104";
+    private final String DirIP="192.168.0.102";
     private Random r;
     private BigInteger p,q,e,d,n,phi;
-    private final int bitlength=1024,RouterPort=9595;
-    private final int blocksize=256;
+    private final int RouterPort=9091,DirPort=9090;
     
     TorRouter()
     {
         routerlog.info("Tor Router Initialized.");
+        //routerlog.setUseParentHandlers(false);
+        E=new String[3];
+        N=new String[3];
+        D=new String[3];
     }
     public static void main(String args[])
     {
@@ -60,7 +63,7 @@ public class TorRouter {
         while(true)
         {
             OR.data=OR.getData();
-            OR.decryptedData=OR.decrypt();
+            OR.decryptedData=OR.decrypt(1);
             OR.sendData();
 
         } 
@@ -85,6 +88,14 @@ public class TorRouter {
     private void genKey()
     {
         routerlog.info("RSA keys being generated...");
+        key(256,0);
+        key(512,1);
+        key(1024,2);
+        routerlog.info("RSA keys generated.");
+    }
+    
+    private void key(int bitlength,int index)
+    {
         r=new Random();
         p=BigInteger.probablePrime(bitlength, r);
         q=BigInteger.probablePrime(bitlength, r);
@@ -98,17 +109,24 @@ public class TorRouter {
         }
 
         d=e.modInverse(phi);
-        E=e.toString();
-        N=n.toString();
-        routerlog.info("RSA keys generated.");
+        E[index]=e.toString();
+        N[index]=n.toString();
+        D[index]=d.toString();
     }
+    
     private void sendToDir()
     {
         try 
         {
-            router=new Socket(DirIP,9090);
+            router=new Socket(DirIP,DirPort);
             dout=new DataOutputStream(router.getOutputStream());
-            dout.writeUTF("0/"+E+"/"+N);
+            dout.writeUTF("0/"+E[0]+"/"+N[0]+"/"+E[1]+"/"+N[1]+"/"+E[1]+"/"+N[2]);
+            
+            for(int i=0;i<3;i++)
+            {
+                System.out.println("E["+i+"]="+E[i]);
+                System.out.println("N["+i+"]="+N[i]);
+            }
             dout.flush();
             dout.close();
             router.close();
@@ -119,14 +137,15 @@ public class TorRouter {
             System.exit(0);
         }
     }
+    
     private byte[] getData()
     {
         routerlog.info("Waiting to receive data.");
         try {
             ServerSocket RouterAsServer=new ServerSocket(RouterPort,10);
             Socket DataSender=RouterAsServer.accept();
+            routerlog.info("Connection with client established.");
             din=new DataInputStream(DataSender.getInputStream());
-            
             int len=din.readInt();
             byte[] receivedData = new byte[len];
             din.readFully(receivedData);
@@ -134,6 +153,7 @@ public class TorRouter {
             DataSender.close();
             RouterAsServer.close();
             routerlog.info("Data Received.");
+            System.out.println("Data received in Bytes"+bytesToString(receivedData));
             return receivedData;
         } 
         catch (IOException ex) 
@@ -142,9 +162,10 @@ public class TorRouter {
         }
         return null;
     }
-    private byte[] decrypt()
+    private byte[] decrypt(int len)
     {
         data=this.data;
+        System.out.println("Data to decrypt in bytes: "+bytesToString(data));
         return (new BigInteger(data)).modPow(d, n).toByteArray();
     }
     
@@ -153,10 +174,11 @@ public class TorRouter {
         try 
         {
             String s = new String(decryptedData);
-            String token[]=s.split(":");
+            System.out.println("decrypted data in bytes :"+bytesToString(decryptedData));
+            String token[]=s.split("/");
             String IP=token[0];
             byte[] dataToSend=token[1].getBytes();
-            Socket RouterAsClient=new Socket(IP,9090);
+            Socket RouterAsClient=new Socket(IP,RouterPort);
             dout=new DataOutputStream(RouterAsClient.getOutputStream());
             dout.write(dataToSend);
             dout.flush();
@@ -166,6 +188,13 @@ public class TorRouter {
         {
             routerlog.severe("Attempt to establish connection with other router failed. Exiting progream.");
         }
+    }
+    private static String bytesToString(byte[] encrypted) {
+        String test = "";
+        for (byte b : encrypted) {
+            test += Byte.toString(b);
+        }
+        return test;
     }
     
 }

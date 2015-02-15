@@ -34,7 +34,7 @@ public class TorDirectory {
     DataInputStream req;
     private String input;
     private String[] IP,token;
-    private String[][] RSA;
+    private String[][][] RSA;
     private boolean[] status;
     private int N,count,DirPort=9090;
     private int id;
@@ -47,7 +47,7 @@ public class TorDirectory {
         id=3;
         N=50;
         IP=new String[N];
-        RSA=new String[N][2];
+        RSA=new String[N][2][3];
         status=new boolean[N];
         count=0;
         dirlog.info("Number of routers online : "+count);
@@ -138,31 +138,41 @@ public class TorDirectory {
     {
         dirlog.info("Router operations initiated.");
         IP[count] = ""+incoming.getInetAddress();                                       //get ip address of the router node
-        RSA[count][0] = token[1];                                                       // get base of RSA key of the router node
-        RSA[count][1] = token[2];                                                       //get exponent of RSA key of the router node
+        
+        for(int i=0,track=1;i<3;i++,track++)
+        {
+            RSA[count][0][i] = token[track++]; //E                                                   // get base of RSA key of the router node
+            RSA[count][1][i] = token[track];    //N                                                  //get exponent of RSA key of the router node
+        
+        dirlog.info("\n=====>> IP="+IP[count]+"\nE["+i+"] = "+RSA[count][0][i]+"\nN["+i+"] = "+RSA[count][1][i]+"\n");
+        }
         status[count++] = true;                                                         //mark the router online
-        dirlog.info("\n=====>> IP="+IP[count-1]+"\tN = "+token[1]+"\tE = "+token[2]+"\n");
         dirlog.info("Number of routers online : "+count);
     }
+    
     private void client(Socket incoming)
     {
         dirlog.info("Client operations initiated.");
         Random rand = new Random();
         int[] router = new int[3];
-        while(!status[router[0] = rand.nextInt(count)])
-        {   //generate random routers untill status of the generated router is online
-        } 
-        while((router[1]=rand.nextInt(count))==router[0] && !status[router[1]])
+        router[0] = rand.nextInt(count);
+        System.out.println(router[0]);
+        while((router[1]=rand.nextInt(count))==router[0])
         {
+            System.out.println("try"+router[1]);
         }
-        while(((router[2]=rand.nextInt(count))==router[1] ) && ((router[2]=rand.nextInt(count))==router[1]) && !status[router[2]])
+        System.out.println(router[1]);
+        while(((router[2]=rand.nextInt(count))==router[1] ) || (router[2]==router[0]))
         {
+            System.out.println("try"+router[2]);
         }
+        System.out.println(router[2]);
         String metadata = "";
         for(int node :router)
         {
-            metadata += IP[node] + "/" + RSA[node][1] + "/" + RSA[node][0];
+            metadata += IP[node] + "/" + RSA[node][0][node] + "/" + RSA[node][1][node];
         }
+        System.out.println(metadata);
         try
         {
             DataOutputStream response = new DataOutputStream(incoming.getOutputStream());
