@@ -1,6 +1,14 @@
-Feb 14, 2015 7:03:22 PM router.TorRouter genKey
+Apr 04, 2015 2:53:12 AM router.TorRouter genKey
 INFO: RSA keys being generated...
-Feb 14, 2015 7:03:23 PM router.TorRouter genKey
+Apr 04, 2015 2:53:13 AM router.TorRouter genKey
 INFO: RSA keys generated.
-Feb 14, 2015 7:03:23 PM router.TorRouter getData
+Apr 04, 2015 2:53:13 AM router.TorRouter getData
+INFO: Waiting to receive data.
+Apr 04, 2015 2:53:31 AM router.TorRouter getData
+INFO: Connection with client established.
+Apr 04, 2015 2:53:31 AM router.TorRouter getData
+INFO: Data Received.
+Apr 04, 2015 2:53:31 AM router.TorRouter sendData
+SEVERE: Attempt to establish connection with other router failed. Exiting progream.
+Apr 04, 2015 2:53:31 AM router.TorRouter getData
 INFO: Waiting to receive data.

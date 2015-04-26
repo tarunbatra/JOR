@@ -138,12 +138,12 @@ public class TorDirectory {
     {
         dirlog.info("Router operations initiated.");
         IP[count] = ""+incoming.getInetAddress();                                       //get ip address of the router node
-        
-        for(int i=0,track=1;i<3;i++,track++)
+        int track=1;
+        for(int i=0;i<3;i++)
         {
+            dirlog.info(""+track);
             RSA[count][0][i] = token[track++]; //E                                                   // get base of RSA key of the router node
-            RSA[count][1][i] = token[track];    //N                                                  //get exponent of RSA key of the router node
-        
+            RSA[count][1][i] = token[track++];    //N                                                  //get exponent of RSA key of the router node
         dirlog.info("\n=====>> IP="+IP[count]+"\nE["+i+"] = "+RSA[count][0][i]+"\nN["+i+"] = "+RSA[count][1][i]+"\n");
         }
         status[count++] = true;                                                         //mark the router online
@@ -168,9 +168,10 @@ public class TorDirectory {
         }
         System.out.println(router[2]);
         String metadata = "";
+        int key=2;
         for(int node :router)
         {
-            metadata += IP[node] + "/" + RSA[node][0][node] + "/" + RSA[node][1][node];
+            metadata += IP[node] + "/" + RSA[node][0][key] + "/" + RSA[node][1][key--];
         }
         System.out.println(metadata);
         try

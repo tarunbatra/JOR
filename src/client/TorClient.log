@@ -1,12 +1,10 @@
-Feb 07, 2015 3:51:47 PM client.TorClient DirData
+Apr 04, 2015 2:53:28 AM client.TorClient DirData
 INFO: Fetching data from Tor Directory.
-Feb 07, 2015 3:51:47 PM client.TorClient DirData
+Apr 04, 2015 2:53:28 AM client.TorClient DirData
 INFO: Data fetching finished.
-Feb 07, 2015 3:51:50 PM client.TorClient main
+Apr 04, 2015 2:53:31 AM client.TorClient main
 INFO: Data to be sent received.
-Feb 07, 2015 3:51:50 PM client.TorClient encrypt
+Apr 04, 2015 2:53:31 AM client.TorClient makeOnion
 INFO: Data encryption process initiated.
-Feb 07, 2015 3:51:50 PM client.TorClient encrypt
-INFO: Data encryption process completed.
-Feb 07, 2015 3:51:50 PM client.TorClient torouter1
+Apr 04, 2015 2:53:31 AM client.TorClient torouter1
 INFO: Data being sent through Proxy Routers.

@@ -21,6 +21,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -41,7 +43,7 @@ public class TorClient {
     private String IP[] = new String[3];
     private String E[] = new String[3];
     private String N[] = new String[3];
-    private String FinalIP,DirIP="192.168.0.102";
+    private String FinalIP,DirIP="192.168.0.111";
     private final int DirPort=9090;
 
     TorClient() {
@@ -68,10 +70,10 @@ public class TorClient {
         //get request from client
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter data :");
-        String message = sc.next();
+        String message = sc.nextLine();
         clientlog.info("Data to be sent received.");
         //encrypt thrice
-        byte[] encrypted = object.encrypt(message.getBytes());
+        byte[] encrypted = object.makeOnion(message.getBytes());
         //sending to bridge node
         object.torouter1(encrypted);
 
@@ -106,42 +108,67 @@ public class TorClient {
         for (int i = 0; i < 3; i++) {
             //System.out.println(splitData.length+"---"+i);
             IP[i] = splitData[j++]; System.out.println(IP[i]);
-            E[i] = splitData[j++];System.out.println("E="+E[i]);
-            N[i] = splitData[j++];System.out.println("N="+N[i]);
+            E[i] = splitData[j++];  System.out.println("E="+E[i]);
+            N[i] = splitData[j++];  System.out.println("N="+N[i]);
         }
     }
 
-    private byte[] encrypt(byte[] message) {
-        System.out.println("message in string: "+new String(message));///////////////
-        System.out.println("message in bytes: "+bytesToString(message));/////////////
+    private byte[] makeOnion(byte[] message) {
         clientlog.info("Data encryption process initiated.");
-        byte[][] encrypt = new byte[3][];
-        BigInteger e, n;
-        byte[] ipaddr, data = null;
-        for (int i = 0; i < 3; i++) {
-            
-            if (i == 0) {
-                ipaddr = (FinalIP + "/").getBytes();
-                data = message;
-            } else {
-                ipaddr = (IP[i - 1] + "/").getBytes();
-                data = encrypt[i - 1];
-            }
-            byte[] combine = new byte[ipaddr.length + data.length];
-            for (int j = 0; j < combine.length; j++) {
-                combine[j] = j < ipaddr.length ? ipaddr[j] : data[j - ipaddr.length];
-            }
-            //System.out.println(bytesToString(combine));
-            //System.out.println(new String(combine));
-            e = new BigInteger(E[i]);
-            n = new BigInteger(N[i]);
-            encrypt[i] = (new BigInteger(combine)).modPow(e, n).toByteArray();//////////////////////////// encryption
-            System.out.println("Cell"+i+"in String: "+bytesToString(encrypt[i]));
-
-        }
-        clientlog.info("Data encryption process completed.");
-        return encrypt[2];
+        byte[] peel2=makeCell(makeCell(makeCell(message,FinalIP,2),IP[2],1),IP[1],0);
+       return peel2;
     }
+    
+    private byte[] makeCell(byte[] data, String IP,int i)
+    {
+        String p = IP+"::"+new String(data);
+        System.out.println(i+"th peel: "+p);
+        byte[] peel = p.getBytes();
+        
+        /*
+        byte[] peel=new byte[19+data.length];
+        ByteBuffer target = ByteBuffer.wrap(peel);
+        
+        
+        //IP
+        byte[] ip= "               ".getBytes();
+        ByteBuffer iptarget = ByteBuffer.wrap(ip);
+        iptarget.put(IP.getBytes());
+        target.put(ip);
+        System.out.println("IP in string--> "+new String(ip));
+        System.out.println("IP in bytes--> "+bytesToString(ip));
+        
+        
+        //LENGTH
+        byte[] len= "    ".getBytes();
+        ByteBuffer lentarget = ByteBuffer.wrap(len);
+        lentarget.put((""+data.length).getBytes());
+        target.put(len);
+        System.out.println("len in string--> "+new String(len));
+        System.out.println("len in bytes--> "+bytesToString(len));
+        
+        //DATA
+        target.put(data);
+        System.out.println("data in bytes--> "+bytesToString(data));
+        System.out.println("peel in bytes--> "+bytesToString(peel));
+        
+                */
+        byte[] encPeel = encrypt(peel,i);
+        System.out.println("encrypted peel in bytes--> "+bytesToString(encPeel));
+        System.out.println("len of encrypted peel in bytes--> "+encPeel.length);
+        return encPeel;
+    }
+    
+    private byte[] encrypt(byte[]peel,int i)
+    {
+        byte[] enc;
+        
+        BigInteger e = new BigInteger(E[i]);
+        BigInteger n = new BigInteger(N[i]);
+        enc = (new BigInteger(peel)).modPow(e, n).toByteArray();
+        return enc;
+    }
+        
 
     private static String bytesToString(byte[] encrypted) {
         String test = "";
@@ -154,7 +181,7 @@ public class TorClient {
     private void torouter1(byte[] message_router1) {
         try {
             clientlog.info("Data being sent through Proxy Routers.");
-            client = new Socket(IP[0], 9091);
+            client = new Socket(IP[2], 9091);
             dout = new DataOutputStream(client.getOutputStream());
             dout.writeInt(message_router1.length);
             dout.write(message_router1);

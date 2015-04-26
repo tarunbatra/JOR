@@ -23,6 +23,7 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -40,7 +41,7 @@ public class TorRouter {
     private Socket router;
     private String[] E,N,D;
     private byte[] data,decryptedData;
-    private final String DirIP="192.168.0.102";
+    private final String DirIP="192.168.0.111";
     private Random r;
     private BigInteger p,q,e,d,n,phi;
     private final int RouterPort=9091,DirPort=9090;
@@ -63,7 +64,9 @@ public class TorRouter {
         while(true)
         {
             OR.data=OR.getData();
-            OR.decryptedData=OR.decrypt(1);
+            System.out.println(OR.data.length);
+            OR.decryptedData=OR.decrypt(OR.data.length);
+            System.out.println(bytesToString(OR.decryptedData));
             OR.sendData();
 
         } 
@@ -120,7 +123,7 @@ public class TorRouter {
         {
             router=new Socket(DirIP,DirPort);
             dout=new DataOutputStream(router.getOutputStream());
-            dout.writeUTF("0/"+E[0]+"/"+N[0]+"/"+E[1]+"/"+N[1]+"/"+E[1]+"/"+N[2]);
+            dout.writeUTF("0/"+E[0]+"/"+N[0]+"/"+E[1]+"/"+N[1]+"/"+E[2]+"/"+N[2]);
             
             for(int i=0;i<3;i++)
             {
@@ -164,23 +167,51 @@ public class TorRouter {
     }
     private byte[] decrypt(int len)
     {
-        data=this.data;
+        int key=0;
+        if(len==256|| len==257)
+        {
+            key=2;
+        }
+        else if(len==128 || len==129)
+        {
+            key=1;
+        }
+        System.out.println("len="+len);
+        System.out.println("keys to be used "+key);
         System.out.println("Data to decrypt in bytes: "+bytesToString(data));
-        return (new BigInteger(data)).modPow(d, n).toByteArray();
+        return (new BigInteger(data)).modPow(new BigInteger(D[key]),new BigInteger(N[key])).toByteArray();
     }
     
     private void sendData()
     {
+        System.out.println("decypted data in string: "+new String(decryptedData));
+        StringTokenizer st=new StringTokenizer(new String(decryptedData),"::");
+        String nextIp=st.nextToken();
+        String m=st.nextToken();
+        byte[] msg=m.trim().getBytes();
+        System.out.println("next peel: "+new String(msg));
+        int l=msg.length;
         try 
-        {
-            String s = new String(decryptedData);
-            System.out.println("decrypted data in bytes :"+bytesToString(decryptedData));
-            String token[]=s.split("/");
-            String IP=token[0];
-            byte[] dataToSend=token[1].getBytes();
-            Socket RouterAsClient=new Socket(IP,RouterPort);
+          {
+              
+//              byte[] ip = new byte[15];
+//              System.arraycopy(decryptedData, 0, ip, 0, 15);
+//              System.out.println("ip:"+bytesToString(ip));
+//              byte[] len = new byte[4];
+//              System.arraycopy(decryptedData, 15, len, 0, 4);
+//              System.out.println("length:"+bytesToString(len));
+//              
+//              int l = Integer.parseInt(new String(len).trim());
+//              System.out.println("so the length is : "+l);
+//              byte[] msg = new byte[l];
+//              System.arraycopy(decryptedData, 19, msg, 0, l);
+//              String nextIp=new String(ip).trim();
+              System.out.println("so you want me to send to : "+nextIp);
+              System.out.println("the data i am sending is : "+bytesToString(msg));
+            Socket RouterAsClient=new Socket(nextIp,RouterPort);
             dout=new DataOutputStream(RouterAsClient.getOutputStream());
-            dout.write(dataToSend);
+            dout.writeInt(l);
+            dout.write(msg);
             dout.flush();
             RouterAsClient.close();
         } 
@@ -189,9 +220,9 @@ public class TorRouter {
             routerlog.severe("Attempt to establish connection with other router failed. Exiting progream.");
         }
     }
-    private static String bytesToString(byte[] encrypted) {
+    private static String bytesToString(byte[] e) {
         String test = "";
-        for (byte b : encrypted) {
+        for (byte b : e) {
             test += Byte.toString(b);
         }
         return test;
