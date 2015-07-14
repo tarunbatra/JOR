@@ -1,0 +1,779 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 577 806
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Tue May  5 11:35:25 2015
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: A4 595 842 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier /F-gs-font MF
+/F-gs-font 10 10 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [595 842] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-simple 1.6.5 90
+
+/do_header {	% print default simple header
+  gsave
+    d_header_x d_header_y HFpt_h 3 div add translate
+
+    HF setfont
+    user_header_p {
+      5 0 moveto user_header_left_str show
+
+      d_header_w user_header_center_str stringwidth pop sub 2 div
+      0 moveto user_header_center_str show
+
+      d_header_w user_header_right_str stringwidth pop sub 5 sub
+      0 moveto user_header_right_str show
+    } {
+      5 0 moveto fname show
+      45 0 rmoveto fmodstr show
+      45 0 rmoveto pagenumstr show
+    } ifelse
+
+  grestore
+} def
+%%EndResource
+/d_page_w 559 def
+/d_page_h 770 def
+/d_header_x 0 def
+/d_header_y 755 def
+/d_header_w 559 def
+/d_header_h 15 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 559 def
+/d_footer_h 0 def
+/d_output_w 559 def
+/d_output_h 755 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (TorDir.log) def
+/fdir (.) def
+/ftail (TorDir.log) def
+% User defined strings:
+/fmodstr (Sat Apr 04 02:53:28 2015) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 742 M
+(Apr 04, 2015 2:53:08 AM directory.TorDirectory connect) s
+5 731 M
+(INFO: Waiting to connect) s
+5 720 M
+(Apr 04, 2015 2:53:13 AM directory.TorDirectory connect) s
+5 709 M
+(INFO: Node connected.) s
+5 698 M
+(Apr 04, 2015 2:53:13 AM directory.TorDirectory connect) s
+5 687 M
+(INFO: Node identified as Router.) s
+5 676 M
+(Apr 04, 2015 2:53:13 AM directory.TorDirectory router) s
+5 665 M
+(INFO: Router operations initiated.) s
+5 654 M
+(Apr 04, 2015 2:53:13 AM directory.TorDirectory router) s
+5 643 M
+(INFO: 1) s
+5 632 M
+(Apr 04, 2015 2:53:13 AM directory.TorDirectory router) s
+5 621 M
+(INFO: ) s
+5 610 M
+(=====>> IP=/192.168.0.111) s
+5 599 M
+(E[0] = 250874106245159986147963998472086478703) s
+5 588 M
+(N[0] = 676141198863307435740355865694609567118402604097908180881910451957953565093605203596) s
+5 577 M
+(4479689097505837696504515974476451214157103028078880755916505541610849) s
+5 555 M
+(Apr 04, 2015 2:53:13 AM directory.TorDirectory router) s
+5 544 M
+(INFO: 3) s
+5 533 M
+(Apr 04, 2015 2:53:14 AM directory.TorDirectory router) s
+5 522 M
+(INFO: ) s
+5 511 M
+(=====>> IP=/192.168.0.111) s
+5 500 M
+(E[1] = 64774499020709433168416918979035160626419663552062622718462218135519989758903) s
+5 489 M
+(N[1] = 121628939020141504083357323538373516549088660750550749701868435835708504379066671333) s
+5 478 M
+(9023402903131491422242209395626440576664186956859227573987572202920645511158813891395968900) s
+5 467 M
+(9608835496440419153068954976701603694955321630376259016154512831575684863206728002047469771) s
+5 456 M
+(9666886231248694278343863695728590992170417) s
+5 434 M
+(Apr 04, 2015 2:53:14 AM directory.TorDirectory router) s
+5 423 M
+(INFO: 5) s
+5 412 M
+(Apr 04, 2015 2:53:14 AM directory.TorDirectory router) s
+5 401 M
+(INFO: ) s
+5 390 M
+(=====>> IP=/192.168.0.111) s
+5 379 M
+(E[2] = 695616234724944873167609121715384076540810123701888324023798324030735546451813866963) s
+5 368 M
+(0576008226811800675072163635670224411210016613493963554907942053372509) s
+5 357 M
+(N[2] = 240499760565070774349015600295468038308724367140882322591398188714899089250316013247) s
+5 346 M
+(2943221635267742889153556449036414108716480228520360093000332025517926948282964299246378649) s
+5 335 M
+(1188198886231106002552822806512840373455994527511029330177151977945760010091800437837490557) s
+5 324 M
+(9977150890604063448973058551792485714153919740268749681871308408174319305301580836966815321) s
+5 313 M
+(6323406224616507212473073571381391253147430548851449488940648318087727354681482967063945259) s
+5 302 M
+(4579220064716912506500787130796498103557230779178015718564976520856717818574510091148923748) s
+5 291 M
+(653153542890743158584622296565273015625548115110239066076304597806537447420301) s
+5 269 M
+(Apr 04, 2015 2:53:14 AM directory.TorDirectory router) s
+5 258 M
+(INFO: Number of routers online : 1) s
+5 247 M
+(Apr 04, 2015 2:53:14 AM directory.TorDirectory connect) s
+5 236 M
+(INFO: Waiting to connect) s
+5 225 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory connect) s
+5 214 M
+(INFO: Node connected.) s
+5 203 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory connect) s
+5 192 M
+(INFO: Node identified as Router.) s
+5 181 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 170 M
+(INFO: Router operations initiated.) s
+5 159 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 148 M
+(INFO: 1) s
+5 137 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 126 M
+(INFO: ) s
+5 115 M
+(=====>> IP=/192.168.0.111) s
+5 104 M
+(E[0] = 175651933505522426837549284842578470909) s
+5 93 M
+(N[0] = 819321193751286618329314201294083061805625975654149409489504037029846910065520911545) s
+5 82 M
+(6948078769015407489203880301865452833830254785485099541632847715045791) s
+5 60 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 49 M
+(INFO: 3) s
+5 38 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 27 M
+(INFO: ) s
+5 16 M
+(=====>> IP=/192.168.0.111) s
+5 5 M
+(E[1] = 102705307847587266425793738750071227969991629903723297960895401396414773537781) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (TorDir.log) def
+/fdir (.) def
+/ftail (TorDir.log) def
+% User defined strings:
+/fmodstr (Sat Apr 04 02:53:28 2015) def
+/pagenumstr (2) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 742 M
+(N[1] = 145803263774895781369397898850985464222794162842654138941833471698889702655404551227) s
+5 731 M
+(6754911377881303033009766654121607375770588678074368292864365750103093299626257428834600400) s
+5 720 M
+(1644918943176735739535982972842290580279898393388526238230900292594956237957217589416033977) s
+5 709 M
+(4445094786495773873330459819040777032846871) s
+5 687 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 676 M
+(INFO: 5) s
+5 665 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 654 M
+(INFO: ) s
+5 643 M
+(=====>> IP=/192.168.0.111) s
+5 632 M
+(E[2] = 884056430642005843606108762179014224713805067326920166419581354848807418617144856020) s
+5 621 M
+(2692787119278076171193587040851083208100712254100322469961678970674681) s
+5 610 M
+(N[2] = 127496802119459770986178246103683375680859965961952265554995585514957723040759493689) s
+5 599 M
+(6026351304558499248721282748231670838788256223194019900907741554799779497340221333051156897) s
+5 588 M
+(9642232351441694728745033641711300590351631470003005441637669070804671876983679968283437684) s
+5 577 M
+(4971899289782003205981486236205776129698244115355700652485976133104701659812481353038965402) s
+5 566 M
+(4735804343851020317254545796124761207591557380976033792307974878884854099691018289096925317) s
+5 555 M
+(6896827369793565582905781847752523645521255055971295156314973848994306382361853405450584718) s
+5 544 M
+(136224845733486239693157878730005725409972664455935710586957916537428120864267) s
+5 522 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 511 M
+(INFO: Number of routers online : 2) s
+5 500 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory connect) s
+5 489 M
+(INFO: Waiting to connect) s
+5 478 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory connect) s
+5 467 M
+(INFO: Node connected.) s
+5 456 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory connect) s
+5 445 M
+(INFO: Node identified as Router.) s
+5 434 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 423 M
+(INFO: Router operations initiated.) s
+5 412 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 401 M
+(INFO: 1) s
+5 390 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 379 M
+(INFO: ) s
+5 368 M
+(=====>> IP=/192.168.0.111) s
+5 357 M
+(E[0] = 294194310985170863325285608158394987683) s
+5 346 M
+(N[0] = 866423777061598996577068784564097418736486828992686302088133371481961529619259294909) s
+5 335 M
+(3362008362207291755765230873019349462251595806568312215509690266937061) s
+5 313 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 302 M
+(INFO: 3) s
+5 291 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 280 M
+(INFO: ) s
+5 269 M
+(=====>> IP=/192.168.0.111) s
+5 258 M
+(E[1] = 91019402189752235997795816469952998824148630043348181962977574559096984172291) s
+5 247 M
+(N[1] = 138668926426320882996732835966768604490666564040417341827403567603432237578294919940) s
+5 236 M
+(0264515974624010419293200085115539106021802356090645979633672596289963679430684770115521475) s
+5 225 M
+(8332012983766314611114445133097439658443753159234954422037974845577999576924435554589413710) s
+5 214 M
+(9056806435304726329134756999842847428134379) s
+5 192 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 181 M
+(INFO: 5) s
+5 170 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 159 M
+(INFO: ) s
+5 148 M
+(=====>> IP=/192.168.0.111) s
+5 137 M
+(E[2] = 672556058301664978703554164615250125837229957695192497115495613213915466394464704022) s
+5 126 M
+(8533107804520970774946660590082427888090793047687275825651262634391591) s
+5 115 M
+(N[2] = 178557356345476155861808758014855343664972960895233295396323356804170165504996721026) s
+5 104 M
+(8910996361919432344840142991782285393767292290406545501124988003468797621170530606078973494) s
+5 93 M
+(9258998113243093088798315541147479811323566413869446082681044038463087313629672155414001877) s
+5 82 M
+(4519746234336138728356040401326463067740262358338311563926482710281246323970353583872926330) s
+5 71 M
+(8487793235264087960723396051676740674368035362875961407824732356985656346744131382435372908) s
+5 60 M
+(3681784666318680160794151075831254977391803388746052085053196324845170668691000267574218464) s
+5 49 M
+(652011234230858456869564216925846369354932759768897783311212009836693638934789) s
+5 27 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory router) s
+5 16 M
+(INFO: Number of routers online : 3) s
+5 5 M
+(Apr 04, 2015 2:53:18 AM directory.TorDirectory connect) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (TorDir.log) def
+/fdir (.) def
+/ftail (TorDir.log) def
+% User defined strings:
+/fmodstr (Sat Apr 04 02:53:28 2015) def
+/pagenumstr (3) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 742 M
+(INFO: Waiting to connect) s
+5 731 M
+(Apr 04, 2015 2:53:28 AM directory.TorDirectory connect) s
+5 720 M
+(INFO: Node connected.) s
+5 709 M
+(Apr 04, 2015 2:53:28 AM directory.TorDirectory connect) s
+5 698 M
+(INFO: Node identified as Client.) s
+5 687 M
+(Apr 04, 2015 2:53:28 AM directory.TorDirectory client) s
+5 676 M
+(INFO: Client operations initiated.) s
+5 665 M
+(Apr 04, 2015 2:53:28 AM directory.TorDirectory client) s
+5 654 M
+(INFO: Data sent to Client /192.168.0.111) s
+5 643 M
+(Apr 04, 2015 2:53:28 AM directory.TorDirectory connect) s
+5 632 M
+(INFO: Waiting to connect) s
+_R
+S
+%%Trailer
+%%Pages: 3
+%%DocumentNeededResources: font Courier-Bold Courier 
+%%EOF
